@@ -1,54 +1,156 @@
-# HeyGen Interactive Avatar NextJS Demo
+# Interactive Avatar with Face Recognition
 
-![HeyGen Interactive Avatar NextJS Demo Screenshot](./public/demo.png)
+A React-based interactive avatar system with voice interaction, face recognition, and IoT capabilities. This application combines several advanced technologies to create a virtual assistant that can respond to voice commands, recognize faces, and control physical devices through an Arduino connection.
 
-This is a sample project and was bootstrapped using [NextJS](https://nextjs.org/).
-Feel free to play around with the existing code and please leave any feedback for the SDK [here](https://github.com/HeyGen-Official/StreamingAvatarSDK/discussions).
+## Features
 
-## Getting Started FAQ
+- **Interactive 3D Avatar**: Animated 3D avatar with speech synthesis using HeyGen API
+- **Face Recognition**: User identification and authorization using facial recognition
+- **Speech Recognition**: Multiple voice recognition options including Google Speech API
+- **Natural Language Understanding**: Context-aware responses for university-related queries
+- **IoT Control**: Door control through Arduino serial connection
+- **Multi-modal Interface**: Voice, text, and touch interaction methods
 
-### Setting up the demo
+## Tech Stack
 
-1. Clone this repo
+- **Frontend**: React, TypeScript, NextUI components
+- **Avatar**: HeyGen Streaming Avatar API
+- **Face Recognition**: @vladmandic/face-api (secure fork of face-api.js)
+- **Speech Recognition**: Web Speech API (Google implementation)
+- **IoT Communication**: Web Serial API for Arduino communication
 
-2. Navigate to the repo folder in your terminal
+## Installation
 
-3. Run `npm install` (assuming you have npm installed. If not, please follow these instructions: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/)
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/interactive-avatar.git
+   cd interactive-avatar
+   ```
 
-4. Enter your HeyGen Enterprise API Token or Trial Token in the `.env` file. Replace `HEYGEN_API_KEY` with your API key. This will allow the Client app to generate secure Access Tokens with which to create interactive sessions.
+2. Install dependencies
+   ```bash
+   npm install
+   ```
 
-   You can retrieve either the API Key or Trial Token by logging in to HeyGen and navigating to this page in your settings: [https://app.heygen.com/settings?nav=API]. NOTE: use the trial token if you don't have an enterprise API token yet.
+3. Set up face recognition models
+   ```bash
+   npm run setup-face-models
+   ```
 
-5. (Optional) If you would like to use the OpenAI features, enter your OpenAI Api Key in the `.env` file.
+4. Create the necessary directories for face images
+   ```bash
+   mkdir -p public/members/{ahmet,mehmet,ayse,fatma,murat}
+   ```
 
-6. Run `npm run dev`
+5. Start the development server
+   ```bash
+   npm run dev
+   ```
 
-### Difference between Trial Token and Enterprise API Token
+## Project Structure
 
-The HeyGen Trial Token is available to all users, not just Enterprise users, and allows for testing of the Interactive Avatar API, as well as other HeyGen API endpoints.
+```
+/components
+  /InteractiveAvatar
+    - index.tsx                    # Main component that integrates all modules
+    - types.ts                     # Type definitions
+    - useFaceRecognition.tsx       # Face recognition hook
+    - useArduinoConnection.tsx     # Arduino connection hook
+    - useSpeechRecognition.tsx     # Google Speech recognition hook
+    - useConversationEngine.tsx    # Conversation logic and responses
+    - useDoorControl.tsx           # Door control with authorization
+    - AvatarControls.tsx           # UI components for avatar controls
+    - FaceRecognitionModal.tsx     # Modal component for face recognition
+```
 
-Each Trial Token is limited to 3 concurrent interactive sessions. However, every interactive session you create with the Trial Token is free of charge, no matter how many tasks are sent to the avatar. Please note that interactive sessions will automatically close after 10 minutes of no tasks sent.
+## Configuration
 
-If you do not 'close' the interactive sessions and try to open more than 3, you will encounter errors including stuttering and freezing of the Interactive Avatar. Please endeavor to only have 3 sessions open at any time while you are testing the Interactive Avatar API with your Trial Token.
+### Face Recognition
 
-### Starting sessions
+1. Add sample photos to the member directories:
+   - At least 2 photos per person in their respective folder
+   - For example: `/public/members/ahmet/1.jpg` and `/public/members/ahmet/2.jpg`
 
-NOTE: Make sure you have enter your token into the `.env` file and run `npm run dev`.
+2. Ensure the face-api models are downloaded to `/public/models/`
 
-To start your 'session' with a Interactive Avatar, first click the 'start' button. If your HeyGen API key is entered into the Server's .env file, then you should see our demo Interactive Avatar (Monica!) appear.
+### Arduino Setup
 
-After you see Monica appear on the screen, you can enter text into the input labeled 'Repeat', and then hit Enter. The Interactive Avatar will say the text you enter.
+1. The system is configured to work with Arduino devices using a basic serial protocol
+2. Upload the following sketch to your Arduino:
 
-If you want to see a different Avatar or try a different voice, you can close the session and enter the IDs and then 'start' the session again. Please see below for information on where to retrieve different Avatar and voice IDs that you can use.
+```cpp
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);
+}
 
-### Which Avatars can I use with this project?
+void loop() {
+  if (Serial.available() > 0) {
+    char command = Serial.read();
+    
+    if (command == 'H') {
+      digitalWrite(LED_BUILTIN, HIGH); // "Open door"
+      Serial.println("Door opened");
+    } 
+    else if (command == 'L') {
+      digitalWrite(LED_BUILTIN, LOW);  // "Close door"
+      Serial.println("Door closed");
+    }
+    else if (command == 'T') {
+      // Test command
+      Serial.println("Test command received");
+    }
+  }
+}
+```
 
-By default, there are several Public Avatars that can be used in Interactive Avatar. (AKA Interactive Avatars.) You can find the Avatar IDs for these Public Avatars by navigating to [app.heygen.com/interactive-avatar](https://app.heygen.com/interactive-avatar) and clicking 'Select Avatar' and copying the avatar id.
+## Usage
 
-In order to use a private Avatar created under your own account in Interactive Avatar, it must be upgraded to be a Interactive Avatar. Only 1. Finetune Instant Avatars and 2. Studio Avatars are able to be upgraded to Interactive Avatars. This upgrade is a one-time fee and can be purchased by navigating to [app.heygen.com/interactive-avatar] and clicking 'Select Avatar'.
+1. Start the application
+2. Connect to Arduino using the "Arduino'ya Bağlan" button
+3. Select an avatar and language
+4. Start the session
+5. Use the "Yüz Tanıma" button to authenticate with face recognition
+6. Interact with the avatar using one of three modes:
+   - Text mode: Type and send messages
+   - Voice mode: Use built-in voice recognition
+   - Google Speech: Use Google's speech recognition API (more accurate for Turkish)
 
-Please note that Photo Avatars are not compatible with Interactive Avatar and cannot be used.
+### Voice Commands
 
-### Where can I read more about enterprise-level usage of the Interactive Avatar API?
+The assistant can respond to various queries about Dünya Barış Üniversitesi:
+- General info: "Sen kimsin?"
+- University vision/mission: "Üniversitenin vizyonu nedir?"
+- Faculties: "Hangi fakülteler var?"
+- Scholarships: "Burs imkanları nedir?"
+- Daily info: "Bugün neler var?", "Öğle yemeğinde ne var?"
 
-Please read our Interactive Avatar 101 article for more information on pricing and how to increase your concurrent session limit: https://help.heygen.com/en/articles/9182113-interactive-avatar-101-your-ultimate-guide
+### Door Control
+
+Only authorized users (currently "ahmet" and "murat") can open the door:
+- "Kapıyı aç" - Opens the door if user is authorized
+- "Kapıyı kapat" - Closes the door (no authorization required)
+
+## Security Features
+
+- Face recognition based authentication
+- Role-based access control for door operations
+- Session-based authorization storage
+
+## Development Notes
+
+- For production use, replace mock face detection with actual face processing
+- The conversation engine can be expanded with additional patterns and responses
+- The Arduino connection supports any serial-based protocol
+
+## Dependencies
+
+- @heygen/streaming-avatar
+- @nextui-org/react
+- @vladmandic/face-api
+- ahooks
+- react & react-dom
+
+## License
+
+World Peace University - https://wpu.edu.tr
